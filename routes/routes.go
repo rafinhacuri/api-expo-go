@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rafinhacuri/api-expo-go.git/controllers"
+	"github.com/rafinhacuri/api-expo-go/controllers"
 )
 
 func RegisterRoutes(server *gin.Engine) {

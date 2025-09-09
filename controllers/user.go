@@ -2,12 +2,13 @@ package controllers
 
 import (
 	"context"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rafinhacuri/api-expo-go.git/db"
-	"github.com/rafinhacuri/api-expo-go.git/models"
-	"github.com/rafinhacuri/api-expo-go.git/passwords"
-	"github.com/rafinhacuri/api-expo-go.git/utils"
+	"github.com/rafinhacuri/api-expo-go/db"
+	"github.com/rafinhacuri/api-expo-go/models"
+	"github.com/rafinhacuri/api-expo-go/passwords"
+	"github.com/rafinhacuri/api-expo-go/utils"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -48,12 +49,15 @@ func InsertUser(ctx *gin.Context) {
 		Nivel: request.Nivel,
 	}
 
-	if err := db.Database.Collection("usuarios").FindOne(context.TODO(), bson.M{"email": user.Email}).Decode(&user); err == nil {
+	ctxReq, cancel := context.WithTimeout(ctx.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	if err := db.Database.Collection("usuarios").FindOne(ctxReq, bson.M{"email": user.Email}).Decode(&user); err == nil {
 		ctx.JSON(400, gin.H{"error": "User with this email already exists"})
 		return
 	}
 
-	if _, err := db.Database.Collection("usuarios").InsertOne(context.TODO(), user); err != nil {
+	if _, err := db.Database.Collection("usuarios").InsertOne(ctxReq, user); err != nil {
 		ctx.JSON(500, gin.H{"error": err.Error()})
 		return
 	}

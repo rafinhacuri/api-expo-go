@@ -1,4 +1,4 @@
-module github.com/rafinhacuri/api-expo-go.git
+module github.com/rafinhacuri/api-expo-go
 
 go 1.25.0
 

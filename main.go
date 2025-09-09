@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/rafinhacuri/api-expo-go.git/db"
-	"github.com/rafinhacuri/api-expo-go.git/routes"
+	"github.com/rafinhacuri/api-expo-go/db"
+	"github.com/rafinhacuri/api-expo-go/routes"
 )
 
 func init() {
