@@ -41,7 +41,7 @@ func InsertUser(ctx *gin.Context) {
 		return
 	}
 
-	user := models.User{
+	user := &models.User{
 		Nome:  request.Nome,
 		Idade: request.Idade,
 		Email: request.Email,
@@ -52,7 +52,12 @@ func InsertUser(ctx *gin.Context) {
 	ctxReq, cancel := context.WithTimeout(ctx.Request.Context(), 5*time.Second)
 	defer cancel()
 
-	if err := db.Database.Collection("usuarios").FindOne(ctxReq, bson.M{"email": user.Email}).Decode(&user); err == nil {
+	count, err := db.Database.Collection("usuarios").CountDocuments(ctxReq, bson.M{"email": user.Email})
+	if err != nil {
+		ctx.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	if count > 0 {
 		ctx.JSON(400, gin.H{"error": "User with this email already exists"})
 		return
 	}
