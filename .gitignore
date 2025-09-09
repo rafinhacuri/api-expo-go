@@ -1,0 +1,15 @@
+# Local env files
+.env
+.env.*
+!.env.example
+
+tmp
+
+*.exe
+*.dll
+*.so
+*.dylib
+
+*.test
+
+*.out
