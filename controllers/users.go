@@ -17,7 +17,7 @@ func GetUsers(ctx *gin.Context) {
 
 	var userList []*models.User
 	for cursor.Next(ctx.Request.Context()) {
-		var user models.User
+		user := models.User{}
 		if err := cursor.Decode(&user); err != nil {
 			ctx.JSON(500, gin.H{"error": err.Error()})
 			return
