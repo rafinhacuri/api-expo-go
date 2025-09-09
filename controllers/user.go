@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -10,6 +11,7 @@ import (
 	"github.com/rafinhacuri/api-expo-go/passwords"
 	"github.com/rafinhacuri/api-expo-go/utils"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func InsertUser(ctx *gin.Context) {
@@ -68,4 +70,29 @@ func InsertUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(201, gin.H{"message": "User created successfully"})
+}
+
+func GetUser(ctx *gin.Context) {
+	id := ctx.Query("id")
+
+	if id == "" {
+		ctx.JSON(400, gin.H{"error": "User ID is required"})
+		return
+	}
+
+	fmt.Println("Received ID:", id)
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		ctx.JSON(400, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	var user models.User
+	if err := db.Database.Collection("usuarios").FindOne(ctx.Request.Context(), bson.M{"_id": objID}).Decode(&user); err != nil {
+		ctx.JSON(404, gin.H{"error": "User not found"})
+		return
+	}
+
+	ctx.JSON(200, gin.H{"user": &user})
 }
