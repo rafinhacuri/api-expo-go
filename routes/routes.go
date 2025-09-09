@@ -14,5 +14,6 @@ func RegisterRoutes(server *gin.Engine) {
 
 	path := server.Group("/api")
 
+	path.GET("/users", controllers.GetUsers)
 	path.POST("/user", controllers.InsertUser)
 }
