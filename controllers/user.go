@@ -96,3 +96,34 @@ func GetUser(ctx *gin.Context) {
 
 	ctx.JSON(200, gin.H{"user": &user})
 }
+
+func DeleteUser(ctx *gin.Context) {
+	id := struct {
+		ID string `json:"id" binding:"required"`
+	}{}
+
+	if err := ctx.ShouldBindJSON(&id); err != nil {
+		ctx.JSON(400, gin.H{"error": "User ID is required"})
+		return
+	}
+
+	fmt.Println("Received ID:", id)
+
+	objID, err := primitive.ObjectIDFromHex(id.ID)
+	if err != nil {
+		ctx.JSON(400, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	result, err := db.Database.Collection("usuarios").DeleteOne(ctx.Request.Context(), bson.M{"_id": objID})
+	if err != nil {
+		ctx.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	if result.DeletedCount == 0 {
+		ctx.JSON(404, gin.H{"error": "User not found"})
+		return
+	}
+
+	ctx.JSON(200, gin.H{"message": "User deleted successfully"})
+}
