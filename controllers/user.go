@@ -30,19 +30,19 @@ func InsertUser(ctx *gin.Context) {
 		return
 	}
 
-	if err := utils.ValidateEmail(request.Email); err != nil {
-		slog.Warn("invalid email", "error", err, "email", request.Email)
+	if err := utils.ValidateEmail(request.Mail); err != nil {
+		slog.Warn("invalid email", "error", err, "email", request.Mail)
 		ctx.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := utils.ValidatePassword(request.Senha); err != nil {
+	if err := utils.ValidatePassword(request.Password); err != nil {
 		slog.Warn("invalid password format", "error", err, "path", ctx.FullPath())
 		ctx.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	passwordHash, err := passwords.BCrypt(request.Senha)
+	passwordHash, err := passwords.BCrypt(request.Password)
 	if err != nil {
 		slog.Error("failed to hash password", "error", err)
 		ctx.JSON(500, gin.H{"error": "Failed to hash password"})
@@ -50,25 +50,25 @@ func InsertUser(ctx *gin.Context) {
 	}
 
 	user := &models.User{
-		Nome:  request.Nome,
-		Idade: request.Idade,
-		Email: request.Email,
-		Senha: passwordHash,
-		Nivel: request.Nivel,
+		Name:     request.Name,
+		Age:      request.Age,
+		Mail:     request.Mail,
+		Password: passwordHash,
+		Level:    request.Level,
 	}
 
 	ctxReq, cancel := context.WithTimeout(ctx.Request.Context(), 5*time.Second)
 	defer cancel()
 
-	count, err := db.Database.Collection("usuarios").CountDocuments(ctxReq, bson.M{"email": user.Email})
+	count, err := db.Database.Collection("usuarios").CountDocuments(ctxReq, bson.M{"mail": user.Mail})
 	if err != nil {
 		slog.Error("failed to count users", "error", err)
 		ctx.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
 	if count > 0 {
-		slog.Warn("email already exists", "email", user.Email)
-		ctx.JSON(400, gin.H{"error": "User with this email already exists"})
+		slog.Warn("mail already exists", "mail", user.Mail)
+		ctx.JSON(400, gin.H{"error": "User with this mail already exists"})
 		return
 	}
 

@@ -8,40 +8,40 @@ import (
 )
 
 type User struct {
-	ID    primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Nome  string             `bson:"nome" json:"nome" binding:"required"`
-	Idade string             `bson:"idade" json:"idade" binding:"required"`
-	Email string             `bson:"email" json:"email" binding:"required"`
-	Senha string             `bson:"senha" json:"senha" binding:"required"`
-	Nivel string             `bson:"nivel" json:"nivel" binding:"required,oneof=adm usuario"`
+	ID       primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	Name     string             `bson:"name" json:"name" binding:"required"`
+	Age      string             `bson:"age" json:"age" binding:"required"`
+	Mail     string             `bson:"mail" json:"mail" binding:"required"`
+	Password string             `bson:"password" json:"password" binding:"required"`
+	Level    string             `bson:"nivel" json:"nivel" binding:"required,oneof=adm usuario"`
 }
 
 type UserRequest struct {
-	Nome  string `bson:"nome" json:"nome"`
-	Idade string `bson:"idade" json:"idade"`
-	Email string `bson:"email" json:"email"`
-	Senha string `bson:"senha" json:"senha"`
-	Nivel string `bson:"nivel" json:"nivel"`
+	Name     string `bson:"name" json:"name"`
+	Age      string `bson:"age" json:"age"`
+	Mail     string `bson:"mail" json:"mail"`
+	Password string `bson:"password" json:"password"`
+	Level    string `bson:"level" json:"level"`
 }
 
 func (u *UserRequest) ValidateRequest() error {
-	if strings.TrimSpace(u.Nome) == "" {
-		return errors.New("o campo 'nome' é obrigatório")
+	if strings.TrimSpace(u.Name) == "" {
+		return errors.New("the field 'name' is required")
 	}
-	if strings.TrimSpace(u.Idade) == "" {
-		return errors.New("o campo 'idade' é obrigatório")
+	if strings.TrimSpace(u.Age) == "" {
+		return errors.New("the field 'age' is required")
 	}
-	if strings.TrimSpace(u.Email) == "" {
-		return errors.New("o campo 'email' é obrigatório")
+	if strings.TrimSpace(u.Mail) == "" {
+		return errors.New("the field 'mail' is required")
 	}
-	if strings.TrimSpace(u.Senha) == "" {
-		return errors.New("o campo 'senha' é obrigatório")
+	if strings.TrimSpace(u.Password) == "" {
+		return errors.New("the field 'password' is required")
 	}
-	if strings.TrimSpace(u.Nivel) == "" {
-		return errors.New("o campo 'nivel' é obrigatório")
+	if strings.TrimSpace(u.Level) == "" {
+		return errors.New("the field 'level' is required")
 	}
-	if u.Nivel != "adm" && u.Nivel != "usuario" {
-		return errors.New("o campo 'nivel' deve ser 'adm' ou 'usuario'")
+	if u.Level != "adm" && u.Level != "usuario" {
+		return errors.New("the field 'level' must be 'adm' or 'usuario'")
 	}
 	return nil
 }

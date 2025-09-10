@@ -8,7 +8,7 @@ import (
 
 func ValidatePassword(password string) error {
 	if len(password) < 6 {
-		return errors.New("a senha deve ter pelo menos 6 caracteres")
+		return errors.New("password must be at least 6 characters long")
 	}
 
 	var hasUpper, hasLower, hasNumber, hasSymbol bool
@@ -26,16 +26,16 @@ func ValidatePassword(password string) error {
 	}
 
 	if !hasUpper {
-		return errors.New("a senha deve conter pelo menos uma letra maiúscula")
+		return errors.New("password must contain at least one uppercase letter")
 	}
 	if !hasLower {
-		return errors.New("a senha deve conter pelo menos uma letra minúscula")
+		return errors.New("password must contain at least one lowercase letter")
 	}
 	if !hasNumber {
-		return errors.New("a senha deve conter pelo menos um número")
+		return errors.New("password must contain at least one number")
 	}
 	if !hasSymbol {
-		return errors.New("a senha deve conter pelo menos um símbolo")
+		return errors.New("password must contain at least one symbol")
 	}
 
 	return nil
