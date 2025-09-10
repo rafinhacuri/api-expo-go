@@ -1,0 +1,33 @@
+{
+  "name": "api-expo-go",
+  "type": "module",
+  "version": "1.0.1",
+  "private": true,
+  "packageManager": "pnpm@10.15.1",
+  "description": "Simple API to manage crud operations",
+  "author": {
+    "name": "Rafael Curi",
+    "email": "rafael@curi.dev.br",
+    "url": "https://curi.dev.br"
+  },
+  "license": "MIT",
+  "funding": "https://github.com/rafinhacuri/",
+  "homepage": "https://git.cbpf.br/rafaelcuri/api-expo-go",
+  "repository": {
+    "type": "git",
+    "url": "git+https://git.cbpf.br/rafaelcuri/api-expo-go.git"
+  },
+  "bugs": "https://git.cbpf.br/rafaelcuri/api-expo-go/-/issues",
+  "keywords": [
+    "api",
+    "go"
+  ],
+  "scripts": {
+    "docker:build": "docker build --platform=linux/amd64 -t mizle/api-expo-go:latest -t mizle/api-expo-go:$(node -p \"require('./package.json').version\") .",
+    "docker:push": "docker push mizle/api-expo-go:latest && docker push mizle/api-expo-go:$(node -p \"require('./package.json').version\")",
+    "release": "bumpp && pnpm docker:build && pnpm docker:push"
+  },
+  "devDependencies": {
+    "bumpp": "^10.2.3"
+  }
+}

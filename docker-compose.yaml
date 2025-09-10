@@ -1,0 +1,12 @@
+services:
+  api-expo-go:
+    image: mizle/api-expo-go:latest
+    container_name: api-expo-go
+    ports:
+      - 8080:8080
+    environment:
+      - MONGO_URL=${MONGO_URL}
+      - MONGO_USERNAME=${MONGO_USERNAME}
+      - MONGO_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_DB_NAME=${MONGO_DB_NAME}
+    restart: unless-stopped
