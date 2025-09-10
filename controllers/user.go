@@ -143,3 +143,51 @@ func DeleteUser(ctx *gin.Context) {
 
 	ctx.JSON(200, gin.H{"message": "User deleted successfully"})
 }
+
+func UpdateUser(ctx *gin.Context) {
+	id := ctx.Query("id")
+	if id == "" {
+		slog.Warn("missing user id for update", "path", ctx.FullPath())
+		ctx.JSON(400, gin.H{"error": "User ID is required"})
+		return
+	}
+
+	request := models.UserRequest{}
+
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		slog.Error("failed to bind JSON for update", "error", err, "path", ctx.FullPath())
+		ctx.JSON(400, gin.H{"error": "Failed to bind JSON"})
+		return
+	}
+
+	if err := request.ValidateRequest(); err != nil {
+		slog.Warn("invalid user update request", "error", err)
+		ctx.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		slog.Warn("invalid user id for update", "id", id)
+		ctx.JSON(400, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	update := bson.M{"$set": bson.M{"name": request.Name, "age": request.Age, "mail": request.Mail, "password": request.Password, "nivel": request.Level}}
+
+	result, err := db.Database.Collection("usuarios").UpdateOne(ctx.Request.Context(), bson.M{"_id": objID}, update)
+
+	if err != nil {
+		slog.Error("failed to update user", "error", err)
+		ctx.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	if result.MatchedCount == 0 {
+		slog.Warn("user not found for update", "id", id)
+		ctx.JSON(404, gin.H{"error": "User not found"})
+		return
+	}
+
+	ctx.JSON(200, gin.H{"message": "User updated successfully"})
+}

@@ -18,4 +18,5 @@ func RegisterRoutes(server *gin.Engine) {
 	path.POST("/user", controllers.InsertUser)
 	path.GET("/user", controllers.GetUser)
 	path.DELETE("/user", controllers.DeleteUser)
+	path.PUT("/user", controllers.UpdateUser)
 }

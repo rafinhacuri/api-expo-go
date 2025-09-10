@@ -27,7 +27,7 @@ A simple and secure API built with **Gin** and **MongoDB**, featuring authentica
 - [x] Update user
 - [x] Fetch user
 - [x] Fetch all users
-- [ ] Delete user
+- [x] Delete user
 
 ### 📋 Task Management
 - [ ] Insert task
