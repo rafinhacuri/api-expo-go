@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rafinhacuri/api-expo-go/db"
 	"github.com/rafinhacuri/api-expo-go/models"
 	"github.com/rafinhacuri/api-expo-go/passwords"
-	"github.com/rafinhacuri/api-expo-go/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -30,18 +30,6 @@ func InsertUser(ctx *gin.Context) {
 		return
 	}
 
-	if err := utils.ValidateEmail(request.Mail); err != nil {
-		slog.Warn("invalid email", "error", err, "email", request.Mail)
-		ctx.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-
-	if err := utils.ValidatePassword(request.Password); err != nil {
-		slog.Warn("invalid password format", "error", err, "path", ctx.FullPath())
-		ctx.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-
 	passwordHash, err := passwords.BCrypt(request.Password)
 	if err != nil {
 		slog.Error("failed to hash password", "error", err)
@@ -55,6 +43,8 @@ func InsertUser(ctx *gin.Context) {
 		Mail:     request.Mail,
 		Password: passwordHash,
 		Level:    request.Level,
+		CreateAt: time.Now(),
+		UpdateAt: time.Now(),
 	}
 
 	ctxReq, cancel := context.WithTimeout(ctx.Request.Context(), 5*time.Second)
@@ -146,45 +136,60 @@ func DeleteUser(ctx *gin.Context) {
 
 func UpdateUser(ctx *gin.Context) {
 	id := ctx.Query("id")
+
 	if id == "" {
-		slog.Warn("missing user id for update", "path", ctx.FullPath())
 		ctx.JSON(400, gin.H{"error": "User ID is required"})
 		return
 	}
 
-	request := models.UserRequest{}
-
-	if err := ctx.ShouldBindJSON(&request); err != nil {
-		slog.Error("failed to bind JSON for update", "error", err, "path", ctx.FullPath())
+	var req models.UserRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(400, gin.H{"error": "Failed to bind JSON"})
-		return
-	}
-
-	if err := request.ValidateRequest(); err != nil {
-		slog.Warn("invalid user update request", "error", err)
-		ctx.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		slog.Warn("invalid user id for update", "id", id)
 		ctx.JSON(400, gin.H{"error": "Invalid user ID"})
 		return
 	}
 
-	update := bson.M{"$set": bson.M{"name": request.Name, "age": request.Age, "mail": request.Mail, "password": request.Password, "nivel": request.Level}}
+	set := bson.M{}
+	if strings.TrimSpace(req.Name) != "" {
+		set["name"] = req.Name
+	}
+	if strings.TrimSpace(req.Mail) != "" {
+		set["mail"] = req.Mail
+	}
+	if strings.TrimSpace(req.Level) != "" {
+		set["level"] = req.Level
+	}
+	if strings.TrimSpace(req.Age) != "" {
+		set["age"] = req.Age
+	}
 
-	result, err := db.Database.Collection("usuarios").UpdateOne(ctx.Request.Context(), bson.M{"_id": objID}, update)
+	if strings.TrimSpace(req.Password) != "" {
+		enc, err := passwords.BCrypt(req.Password)
+		if err != nil {
+			ctx.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		set["password"] = enc
+	}
 
-	if err != nil {
-		slog.Error("failed to update user", "error", err)
-		ctx.JSON(500, gin.H{"error": err.Error()})
+	if len(set) == 0 {
+		ctx.JSON(400, gin.H{"error": "No fields to update"})
 		return
 	}
 
-	if result.MatchedCount == 0 {
-		slog.Warn("user not found for update", "id", id)
+	update := bson.M{"$set": set, "$currentDate": bson.M{"updatedAt": true}}
+
+	res, err := db.Database.Collection("usuarios").UpdateOne(ctx.Request.Context(), bson.M{"_id": objID}, update)
+	if err != nil {
+		ctx.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	if res.MatchedCount == 0 {
 		ctx.JSON(404, gin.H{"error": "User not found"})
 		return
 	}

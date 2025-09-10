@@ -3,7 +3,9 @@ package models
 import (
 	"errors"
 	"strings"
+	"time"
 
+	"github.com/rafinhacuri/api-expo-go/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -13,7 +15,9 @@ type User struct {
 	Age      string             `bson:"age" json:"age" binding:"required"`
 	Mail     string             `bson:"mail" json:"mail" binding:"required"`
 	Password string             `bson:"password" json:"password" binding:"required"`
-	Level    string             `bson:"nivel" json:"nivel" binding:"required,oneof=adm usuario"`
+	Level    string             `bson:"level" json:"level" binding:"required,oneof=adm usuario"`
+	CreateAt time.Time          `bson:"createdAt" json:"createdAt"`
+	UpdateAt time.Time          `bson:"updatedAt" json:"updatedAt"`
 }
 
 type UserRequest struct {
@@ -42,6 +46,13 @@ func (u *UserRequest) ValidateRequest() error {
 	}
 	if u.Level != "adm" && u.Level != "usuario" {
 		return errors.New("the field 'level' must be 'adm' or 'usuario'")
+	}
+	if err := utils.ValidateEmail(u.Mail); err != nil {
+		return errors.New("invalid email format")
+	}
+
+	if err := utils.ValidatePassword(u.Password); err != nil {
+		return errors.New("invalid password format")
 	}
 	return nil
 }
