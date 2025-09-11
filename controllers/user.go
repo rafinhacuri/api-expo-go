@@ -17,7 +17,7 @@ import (
 )
 
 func InsertUser(ctx *gin.Context) {
-	request := models.UserRequest{}
+	var request models.UserRequest
 
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		slog.Error("failed to bind JSON", "error", err, "path", ctx.FullPath(), "client_ip", ctx.ClientIP())
@@ -51,7 +51,7 @@ func InsertUser(ctx *gin.Context) {
 	ctxReq, cancel := context.WithTimeout(ctx.Request.Context(), 5*time.Second)
 	defer cancel()
 
-	count, err := db.Database.Collection("usuarios").CountDocuments(ctxReq, bson.M{"mail": user.Mail})
+	count, err := db.Database.Collection("users").CountDocuments(ctxReq, bson.M{"mail": user.Mail})
 	if err != nil {
 		slog.Error("failed to count users", "error", err)
 		ctx.JSON(500, gin.H{"error": err.Error()})
@@ -63,7 +63,7 @@ func InsertUser(ctx *gin.Context) {
 		return
 	}
 
-	if _, err := db.Database.Collection("usuarios").InsertOne(ctxReq, user); err != nil {
+	if _, err := db.Database.Collection("users").InsertOne(ctxReq, user); err != nil {
 		slog.Error("failed to insert user", "error", err)
 		ctx.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -90,14 +90,14 @@ func GetUser(ctx *gin.Context) {
 		return
 	}
 
-	var user models.User
-	if err := db.Database.Collection("usuarios").FindOne(ctx.Request.Context(), bson.M{"_id": objID}).Decode(&user); err != nil {
+	var user *models.User
+	if err := db.Database.Collection("users").FindOne(ctx.Request.Context(), bson.M{"_id": objID}).Decode(&user); err != nil {
 		slog.Warn("user not found", "id", id)
 		ctx.JSON(404, gin.H{"error": "User not found"})
 		return
 	}
 
-	ctx.JSON(200, gin.H{"user": &user})
+	ctx.JSON(200, gin.H{"user": user})
 }
 
 func DeleteUser(ctx *gin.Context) {
@@ -120,7 +120,7 @@ func DeleteUser(ctx *gin.Context) {
 		return
 	}
 
-	result, err := db.Database.Collection("usuarios").DeleteOne(ctx.Request.Context(), bson.M{"_id": objID})
+	result, err := db.Database.Collection("users").DeleteOne(ctx.Request.Context(), bson.M{"_id": objID})
 	if err != nil {
 		slog.Error("failed to delete user", "error", err, "id", id.ID)
 		ctx.JSON(500, gin.H{"error": err.Error()})
@@ -157,24 +157,24 @@ func UpdateUser(ctx *gin.Context) {
 
 	set := bson.M{}
 	if strings.TrimSpace(req.Name) != "" {
-		set["name"] = req.Name
+		set["name"] = &req.Name
 	}
 	if strings.TrimSpace(req.Mail) != "" {
 		if err := utils.ValidateEmail(req.Mail); err != nil {
 			ctx.JSON(400, gin.H{"error": "Invalid email format"})
 			return
 		}
-		set["mail"] = req.Mail
+		set["mail"] = &req.Mail
 	}
 	if strings.TrimSpace(req.Level) != "" {
 		if req.Level != "adm" && req.Level != "usuario" {
 			ctx.JSON(400, gin.H{"error": "The field 'level' must be 'adm' or 'usuario'"})
 			return
 		}
-		set["level"] = req.Level
+		set["level"] = &req.Level
 	}
 	if strings.TrimSpace(req.Age) != "" {
-		set["age"] = req.Age
+		set["age"] = &req.Age
 	}
 
 	if strings.TrimSpace(req.Password) != "" {
@@ -187,7 +187,7 @@ func UpdateUser(ctx *gin.Context) {
 			ctx.JSON(500, gin.H{"error": err.Error()})
 			return
 		}
-		set["password"] = enc
+		set["password"] = &enc
 	}
 
 	if len(set) == 0 {
@@ -197,7 +197,7 @@ func UpdateUser(ctx *gin.Context) {
 
 	update := bson.M{"$set": set, "$currentDate": bson.M{"updatedAt": true}}
 
-	res, err := db.Database.Collection("usuarios").UpdateOne(ctx.Request.Context(), bson.M{"_id": objID}, update)
+	res, err := db.Database.Collection("users").UpdateOne(ctx.Request.Context(), bson.M{"_id": objID}, update)
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": err.Error()})
 		return
