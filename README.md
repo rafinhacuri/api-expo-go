@@ -1,4 +1,4 @@
-# 🚀 API Expo Go
+# 🚀 Go mongo api
 
 A simple and secure API built with **Gin** and **MongoDB**, featuring authentication, task management, and user management.
 
