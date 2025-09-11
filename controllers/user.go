@@ -11,6 +11,7 @@ import (
 	"github.com/rafinhacuri/api-expo-go/db"
 	"github.com/rafinhacuri/api-expo-go/models"
 	"github.com/rafinhacuri/api-expo-go/passwords"
+	"github.com/rafinhacuri/api-expo-go/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -159,9 +160,17 @@ func UpdateUser(ctx *gin.Context) {
 		set["name"] = req.Name
 	}
 	if strings.TrimSpace(req.Mail) != "" {
+		if err := utils.ValidateEmail(req.Mail); err != nil {
+			ctx.JSON(400, gin.H{"error": "Invalid email format"})
+			return
+		}
 		set["mail"] = req.Mail
 	}
 	if strings.TrimSpace(req.Level) != "" {
+		if req.Level != "adm" && req.Level != "usuario" {
+			ctx.JSON(400, gin.H{"error": "The field 'level' must be 'adm' or 'usuario'"})
+			return
+		}
 		set["level"] = req.Level
 	}
 	if strings.TrimSpace(req.Age) != "" {
@@ -169,6 +178,10 @@ func UpdateUser(ctx *gin.Context) {
 	}
 
 	if strings.TrimSpace(req.Password) != "" {
+		if err := utils.ValidatePassword(req.Password); err != nil {
+			ctx.JSON(400, gin.H{"error": "Invalid password format"})
+			return
+		}
 		enc, err := passwords.BCrypt(req.Password)
 		if err != nil {
 			ctx.JSON(500, gin.H{"error": err.Error()})

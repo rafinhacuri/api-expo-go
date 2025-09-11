@@ -9,7 +9,7 @@ A simple and secure API built with **Gin** and **MongoDB**, featuring authentica
 ### 🛠️ Core
 - [x] Initialize Gin routes
 - [x] Create database connection
-- [ ] Finalize user model
+- [x] Finalize user model
 - [ ] Finalize task model
 
 ### 🔒 Security
