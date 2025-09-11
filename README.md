@@ -34,7 +34,7 @@ A simple and secure API built with **Gin** and **MongoDB**, featuring authentica
 - [ ] Update task
 - [ ] Fetch task
 - [x]  Fetch all tasks
-- [ ] Delete task
+- [x] Delete task
 
 ### 📚 Docs
 - [ ] Create project documentation

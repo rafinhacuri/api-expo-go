@@ -9,6 +9,7 @@ import (
 	"github.com/rafinhacuri/api-expo-go/db"
 	"github.com/rafinhacuri/api-expo-go/models"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func InsertTask(ctx *gin.Context) {
@@ -56,4 +57,41 @@ func InsertTask(ctx *gin.Context) {
 	}
 
 	ctx.JSON(201, gin.H{"message": "Task created successfully"})
+}
+
+func DeleteTask(ctx *gin.Context) {
+	id := struct {
+		ID string `json:"id" binding:"required"`
+	}{}
+
+	if err := ctx.ShouldBindJSON(&id); err != nil {
+		slog.Error("failed to bind JSON for delete", "error", err, "path", ctx.FullPath())
+		ctx.JSON(400, gin.H{"error": "User ID is required"})
+		return
+	}
+
+	idMongo, err := primitive.ObjectIDFromHex(id.ID)
+	if err != nil {
+		slog.Warn("invalid id format", "id", id.ID, "error", err)
+		ctx.JSON(400, gin.H{"error": "Invalid id format"})
+		return
+	}
+
+	ctxReq, cancel := context.WithTimeout(ctx.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	result, err := db.Database.Collection("tasks").DeleteOne(ctxReq, bson.M{"_id": idMongo})
+	if err != nil {
+		slog.Error("failed to delete task", "error", err)
+		ctx.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	if result.DeletedCount == 0 {
+		slog.Warn("task not found", "id", id.ID)
+		ctx.JSON(404, gin.H{"error": "Task not found"})
+		return
+	}
+
+	ctx.JSON(200, gin.H{"message": "Task deleted successfully"})
 }
