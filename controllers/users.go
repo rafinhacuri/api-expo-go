@@ -10,7 +10,7 @@ import (
 )
 
 func GetUsers(ctx *gin.Context) {
-	cursor, err := db.Database.Collection("usuarios").Find(ctx.Request.Context(), bson.M{})
+	cursor, err := db.Database.Collection("users").Find(ctx.Request.Context(), bson.M{})
 	if err != nil {
 		slog.Error("failed to fetch users", "error", err, "path", ctx.FullPath())
 		ctx.JSON(500, gin.H{"error": err.Error()})

@@ -167,8 +167,8 @@ func UpdateUser(ctx *gin.Context) {
 		set["mail"] = &req.Mail
 	}
 	if strings.TrimSpace(req.Level) != "" {
-		if req.Level != "adm" && req.Level != "usuario" {
-			ctx.JSON(400, gin.H{"error": "The field 'level' must be 'adm' or 'usuario'"})
+		if req.Level != "adm" && req.Level != "user" {
+			ctx.JSON(400, gin.H{"error": "The field 'level' must be 'adm' or 'user'"})
 			return
 		}
 		set["level"] = &req.Level
