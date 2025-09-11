@@ -30,10 +30,10 @@ A simple and secure API built with **Gin** and **MongoDB**, featuring authentica
 - [x] Delete user
 
 ### 📋 Task Management
-- [ ] Insert task
+- [x] Insert task
 - [ ] Update task
 - [ ] Fetch task
-- [ ] Fetch all tasks
+- [x]  Fetch all tasks
 - [ ] Delete task
 
 ### 📚 Docs
