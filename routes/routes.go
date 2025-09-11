@@ -12,11 +12,13 @@ func RegisterRoutes(server *gin.Engine) {
 		})
 	})
 
-	path := server.Group("/api")
+	api := server.Group("/api")
 
-	path.GET("/users", controllers.GetUsers)
-	path.POST("/user", controllers.InsertUser)
-	path.GET("/user", controllers.GetUser)
-	path.DELETE("/user", controllers.DeleteUser)
-	path.PUT("/user", controllers.UpdateUser)
+	api.GET("/users", controllers.GetUsers)
+	api.POST("/user", controllers.InsertUser)
+	api.GET("/user", controllers.GetUser)
+	api.DELETE("/user", controllers.DeleteUser)
+	api.PUT("/user", controllers.UpdateUser)
+
+	api.POST("/task", controllers.InsertTask)
 }
