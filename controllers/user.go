@@ -111,8 +111,6 @@ func DeleteUser(ctx *gin.Context) {
 		return
 	}
 
-	fmt.Println("Received ID:", id)
-
 	objID, err := primitive.ObjectIDFromHex(id.ID)
 	if err != nil {
 		slog.Warn("invalid user id for delete", "id", id.ID)
