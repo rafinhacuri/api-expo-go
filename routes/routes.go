@@ -21,4 +21,5 @@ func RegisterRoutes(server *gin.Engine) {
 	api.PUT("/user", controllers.UpdateUser)
 
 	api.POST("/task", controllers.InsertTask)
+	api.GET("/tasks", controllers.GetTasks)
 }
