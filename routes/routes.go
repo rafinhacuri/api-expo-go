@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/rafinhacuri/api-expo-go/controllers"
+	"github.com/rafinhacuri/api-expo-go/middleware"
 )
 
 func RegisterRoutes(server *gin.Engine) {
@@ -12,9 +13,9 @@ func RegisterRoutes(server *gin.Engine) {
 		})
 	})
 
-	api := server.Group("/api")
+	server.POST("/auth", controllers.Auth)
 
-	api.POST("/auth", controllers.Auth)
+	api := server.Group("/api", middleware.Authenticate)
 
 	api.GET("/users", controllers.GetUsers)
 	api.POST("/user", controllers.InsertUser)
