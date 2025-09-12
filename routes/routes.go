@@ -24,4 +24,5 @@ func RegisterRoutes(server *gin.Engine) {
 	api.GET("/tasks", controllers.GetTasks)
 	api.DELETE("/task", controllers.DeleteTask)
 	api.PATCH("/task", controllers.CheckTask)
+	api.PUT("/task", controllers.UpdateTask)
 }

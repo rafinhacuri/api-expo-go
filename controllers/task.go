@@ -140,3 +140,61 @@ func CheckTask(ctx *gin.Context) {
 
 	ctx.JSON(200, gin.H{"message": "Task checked successfully"})
 }
+
+func UpdateTask(ctx *gin.Context) {
+	id := ctx.Query("id")
+
+	if id == "" {
+		ctx.JSON(400, gin.H{"error": "Task ID is required"})
+		return
+	}
+
+	idMongo, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		slog.Warn("invalid id format", "id", id, "error", err)
+		ctx.JSON(400, gin.H{"error": "Invalid id format"})
+		return
+	}
+
+	var request models.RequestTask
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		slog.Error("failed to bind JSON", "error", err, "path", ctx.FullPath(), "client_ip", ctx.ClientIP())
+		ctx.JSON(400, gin.H{"error": "Invalid request payload"})
+		return
+	}
+
+	set := bson.M{}
+	if request.Name != "" {
+		set["name"] = request.Name
+	}
+	if request.Description != "" {
+		set["description"] = request.Description
+	}
+	if request.Date != "" {
+		set["date"] = request.Date
+	}
+
+	if len(set) == 0 {
+		ctx.JSON(400, gin.H{"error": "At least one field (name, description, date) must be provided for update"})
+		return
+	}
+
+	set["updatedAt"] = time.Now()
+
+	ctxReq, cancel := context.WithTimeout(ctx.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	result, err := db.Database.Collection("tasks").UpdateByID(ctxReq, idMongo, bson.M{"$set": set})
+	if err != nil {
+		slog.Error("failed to update task", "error", err)
+		ctx.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	if result.MatchedCount == 0 {
+		ctx.JSON(404, gin.H{"error": "Task not found"})
+		return
+	}
+
+	ctx.JSON(200, gin.H{"message": "Task updated successfully"})
+}

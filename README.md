@@ -10,7 +10,7 @@ A simple and secure API built with **Gin** and **MongoDB**, featuring authentica
 - [x] Initialize Gin routes
 - [x] Create database connection
 - [x] Finalize user model
-- [ ] Finalize task model
+- [x] Finalize task model
 
 ### 🔒 Security
 - [x] Password hashing
@@ -31,7 +31,7 @@ A simple and secure API built with **Gin** and **MongoDB**, featuring authentica
 
 ### 📋 Task Management
 - [x] Insert task
-- [ ] Update task
+- [x] Update task
 - [x] Check/unchecked task
 - [x] Fetch all tasks
 - [x] Delete task
