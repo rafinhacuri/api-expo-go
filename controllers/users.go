@@ -19,14 +19,11 @@ func GetUsers(ctx *gin.Context) {
 	defer cursor.Close(ctx.Request.Context())
 
 	var userList []*models.User
-	for cursor.Next(ctx.Request.Context()) {
-		user := models.User{}
-		if err := cursor.Decode(&user); err != nil {
-			slog.Error("failed to decode user", "error", err, "path", ctx.FullPath())
-			ctx.JSON(500, gin.H{"error": err.Error()})
-			return
-		}
-		userList = append(userList, &user)
+
+	if err := cursor.All(ctx.Request.Context(), &userList); err != nil {
+		slog.Error("failed to decode users", "error", err, "path", ctx.FullPath())
+		ctx.JSON(500, gin.H{"error": err.Error()})
+		return
 	}
 
 	ctx.JSON(200, gin.H{"users": userList})

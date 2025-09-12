@@ -27,14 +27,10 @@ func GetTasks(ctx *gin.Context) {
 	defer cursor.Close(ctx.Request.Context())
 
 	var taskList []*models.Task
-	for cursor.Next(ctx.Request.Context()) {
-		task := models.Task{}
-		if err := cursor.Decode(&task); err != nil {
-			slog.Error("failed to decode task", "error", err, "path", ctx.FullPath())
-			ctx.JSON(500, gin.H{"error": err.Error()})
-			return
-		}
-		taskList = append(taskList, &task)
+	if err := cursor.All(ctx.Request.Context(), &taskList); err != nil {
+		slog.Error("failed to decode tasks", "error", err, "path", ctx.FullPath())
+		ctx.JSON(500, gin.H{"error": err.Error()})
+		return
 	}
 
 	ctx.JSON(200, gin.H{"tasks": taskList})
