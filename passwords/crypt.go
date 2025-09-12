@@ -19,5 +19,5 @@ func VerifyBCrypt(password, hashed string) bool {
 	if strings.HasPrefix(hashed, "{CRYPT}") {
 		return false
 	}
-	return bcrypt.CompareHashAndPassword([]byte(password), []byte(hashed)) == nil
+	return bcrypt.CompareHashAndPassword([]byte(hashed), []byte(password)) == nil
 }

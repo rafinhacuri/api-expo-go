@@ -14,6 +14,8 @@ func RegisterRoutes(server *gin.Engine) {
 
 	api := server.Group("/api")
 
+	api.POST("/auth", controllers.Auth)
+
 	api.GET("/users", controllers.GetUsers)
 	api.POST("/user", controllers.InsertUser)
 	api.GET("/user", controllers.GetUser)

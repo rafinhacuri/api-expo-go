@@ -15,7 +15,7 @@ A simple and secure API built with **Gin** and **MongoDB**, featuring authentica
 ### 🔒 Security
 - [x] Password hashing
 - [x] Password verification
-- [ ] JWT-based login authentication
+- [x] JWT-based login authentication
 - [ ] Protect routes for authenticated users only
 
 ### ⚙️ Utilities
