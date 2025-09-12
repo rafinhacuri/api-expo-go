@@ -30,6 +30,10 @@ func InsertTask(ctx *gin.Context) {
 		UpdateAt:    time.Now(),
 	}
 
+	if !ctx.GetBool("adm") {
+		task.Mail = ctx.GetString("mail")
+	}
+
 	if err := task.Validate(); err != nil {
 		ctx.JSON(400, gin.H{"error": err.Error()})
 		return
@@ -80,6 +84,18 @@ func DeleteTask(ctx *gin.Context) {
 	ctxReq, cancel := context.WithTimeout(ctx.Request.Context(), 5*time.Second)
 	defer cancel()
 
+	var task models.Task
+	if err := db.Database.Collection("tasks").FindOne(ctxReq, bson.M{"_id": idMongo}).Decode(&task); err != nil {
+		slog.Warn("task not found", "id", id)
+		ctx.JSON(404, gin.H{"error": "Task not found"})
+		return
+	}
+
+	if !ctx.GetBool("adm") && task.Mail != ctx.GetString("mail") {
+		ctx.JSON(403, gin.H{"error": "forbidden"})
+		return
+	}
+
 	result, err := db.Database.Collection("tasks").DeleteOne(ctxReq, bson.M{"_id": idMongo})
 	if err != nil {
 		slog.Error("failed to delete task", "error", err)
@@ -121,6 +137,11 @@ func CheckTask(ctx *gin.Context) {
 		return
 	}
 
+	if !ctx.GetBool("adm") && task.Mail != ctx.GetString("mail") {
+		ctx.JSON(403, gin.H{"error": "forbidden"})
+		return
+	}
+
 	result, err := db.Database.Collection("tasks").UpdateByID(ctxReq, idMongo, bson.M{"$set": bson.M{"done": !task.Done, "updatedAt": time.Now()}})
 	if err != nil {
 		slog.Error("failed to check task", "error", err)
@@ -156,6 +177,21 @@ func UpdateTask(ctx *gin.Context) {
 		return
 	}
 
+	ctxReq, cancel := context.WithTimeout(ctx.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	var task models.Task
+	if err := db.Database.Collection("tasks").FindOne(ctxReq, bson.M{"_id": idMongo}).Decode(&task); err != nil {
+		slog.Warn("task not found", "id", id)
+		ctx.JSON(404, gin.H{"error": "Task not found"})
+		return
+	}
+
+	if !ctx.GetBool("adm") && task.Mail != ctx.GetString("mail") {
+		ctx.JSON(403, gin.H{"error": "forbidden"})
+		return
+	}
+
 	var request models.RequestTask
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		slog.Error("failed to bind JSON", "error", err, "path", ctx.FullPath(), "client_ip", ctx.ClientIP())
@@ -179,12 +215,9 @@ func UpdateTask(ctx *gin.Context) {
 		return
 	}
 
-	set["updatedAt"] = time.Now()
+	update := bson.M{"$set": set, "$currentDate": bson.M{"updatedAt": true}}
 
-	ctxReq, cancel := context.WithTimeout(ctx.Request.Context(), 5*time.Second)
-	defer cancel()
-
-	result, err := db.Database.Collection("tasks").UpdateByID(ctxReq, idMongo, bson.M{"$set": set})
+	result, err := db.Database.Collection("tasks").UpdateByID(ctxReq, idMongo, update)
 	if err != nil {
 		slog.Error("failed to update task", "error", err)
 		ctx.JSON(500, gin.H{"error": err.Error()})

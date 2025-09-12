@@ -10,6 +10,11 @@ import (
 )
 
 func GetUsers(ctx *gin.Context) {
+	if !ctx.GetBool("adm") {
+		ctx.JSON(403, gin.H{"error": "forbidden"})
+		return
+	}
+
 	cursor, err := db.Database.Collection("users").Find(ctx.Request.Context(), bson.M{})
 	if err != nil {
 		slog.Error("failed to fetch users", "error", err, "path", ctx.FullPath())

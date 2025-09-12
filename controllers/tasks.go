@@ -15,9 +15,12 @@ func GetTasks(ctx *gin.Context) {
 	var filter bson.M
 	if mail != "" {
 		filter = bson.M{"mail": mail}
-	} else {
+	} else if ctx.GetBool("adm") && mail == "" {
 		filter = bson.M{}
+	} else {
+		filter = bson.M{"mail": ctx.GetString("mail")}
 	}
+
 	cursor, err := db.Database.Collection("tasks").Find(ctx.Request.Context(), filter)
 	if err != nil {
 		slog.Error("failed to fetch tasks", "error", err, "path", ctx.FullPath())

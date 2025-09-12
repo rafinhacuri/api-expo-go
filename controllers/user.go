@@ -17,6 +17,11 @@ import (
 )
 
 func InsertUser(ctx *gin.Context) {
+	if !ctx.GetBool("adm") {
+		ctx.JSON(403, gin.H{"error": "forbidden"})
+		return
+	}
+
 	var request models.UserRequest
 
 	if err := ctx.ShouldBindJSON(&request); err != nil {
@@ -97,10 +102,20 @@ func GetUser(ctx *gin.Context) {
 		return
 	}
 
+	if !ctx.GetBool("adm") && user.Mail != ctx.GetString("mail") {
+		ctx.JSON(403, gin.H{"error": "forbidden"})
+		return
+	}
+
 	ctx.JSON(200, gin.H{"user": user})
 }
 
 func DeleteUser(ctx *gin.Context) {
+	if !ctx.GetBool("adm") {
+		ctx.JSON(403, gin.H{"error": "forbidden"})
+		return
+	}
+
 	id := struct {
 		ID string `json:"id" binding:"required"`
 	}{}
@@ -141,15 +156,27 @@ func UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	var req models.UserRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(400, gin.H{"error": "Failed to bind JSON"})
-		return
-	}
-
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		ctx.JSON(400, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	var user models.User
+	if err := db.Database.Collection("users").FindOne(ctx.Request.Context(), bson.M{"_id": objID}).Decode(&user); err != nil {
+		slog.Warn("user not found", "id", id)
+		ctx.JSON(404, gin.H{"error": "User not found"})
+		return
+	}
+
+	if !ctx.GetBool("adm") && user.Mail != ctx.GetString("mail") {
+		ctx.JSON(403, gin.H{"error": "forbidden"})
+		return
+	}
+
+	var req models.UserRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(400, gin.H{"error": "Failed to bind JSON"})
 		return
 	}
 
@@ -195,7 +222,7 @@ func UpdateUser(ctx *gin.Context) {
 
 	update := bson.M{"$set": set, "$currentDate": bson.M{"updatedAt": true}}
 
-	res, err := db.Database.Collection("users").UpdateOne(ctx.Request.Context(), bson.M{"_id": objID}, update)
+	res, err := db.Database.Collection("users").UpdateByID(ctx.Request.Context(), objID, update)
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": err.Error()})
 		return
