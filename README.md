@@ -32,8 +32,8 @@ A simple and secure API built with **Gin** and **MongoDB**, featuring authentica
 ### 📋 Task Management
 - [x] Insert task
 - [ ] Update task
-- [ ] Fetch task
-- [x]  Fetch all tasks
+- [x] Check/unchecked task
+- [x] Fetch all tasks
 - [x] Delete task
 
 ### 📚 Docs
